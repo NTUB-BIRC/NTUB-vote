@@ -4,6 +4,22 @@ import config  # setting for this project
 from contextlib import closing
 
 
+# list for the student that have already vote
+stu_id_list = []
+
+# load the vote history
+try:
+    f = open('./list.txt', 'r')
+    for line in f:
+        stu_id_list.append(line)
+except Exception as e:
+    print('read file error')
+    f.close()
+    exit()
+else:
+    print('load file done\n')
+
+# build socket
 with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as connection:
     # Connect to the card reader
     connection.connect(config.ADDRESS)
@@ -38,7 +54,17 @@ with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as connection:
                 card_id += card_id_part
 
             # print the card id that get this time
-            print(card_id)
+            # print(card_id)
+
+            # if the card id have not vote write into list.txt
+            if card_id not in stu_id_list:
+                stu_id_list.append(card_id)
+                with open('./list.txt', 'a') as stu_id_list_file:
+                    stu_id_list_file.write('{0}\n'.format(card_id))
+
+                print('{0} have not vote before'.format(card_id))
+            else:
+                print('{0} have already vote before'.format(card_id))
 
             # clear the record
             card_id = ''
