@@ -13,14 +13,15 @@ def load_file():
     try:
         f = open('./list.txt', 'r')
         for line in f:
-            stu_id_list.append(line)
+            stu_id_list.append(line.replace('\n', ''))
     except Exception as e:
         print('read file error')
-        f.close()
         return False
     else:
         print('load file done\n')
         return True
+    finally:
+        f.close()
 
 
 # parse the return hex value and print the card id out
