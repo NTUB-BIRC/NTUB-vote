@@ -2,10 +2,12 @@
 import socket
 import config  # setting for this project
 from contextlib import closing
+from gui import VoteGUI
 
 
 # globel
 stu_id_list = []  # list for the student that have already vote
+vote_gui = VoteGUI()
 
 
 # load the vote history
@@ -37,8 +39,8 @@ def card_id_process(return_value_hex):
     card_id_site = str(return_value_dec[19] * 256 + return_value_dec[20])
     card_id_card = str(return_value_dec[23] * 256 + return_value_dec[24])
     for card_id_part in [card_id_site, card_id_card]:
-        not_enough_len = 5 - len(card_id_site)
-        if not not_enough_len:
+        not_enough_len = 5 - len(card_id_part)
+        if not_enough_len:
             for index in range(0, not_enough_len):
                 card_id_part = '0{0}'.format(card_id_part)
 
@@ -51,8 +53,10 @@ def card_id_process(return_value_hex):
             stu_id_list_file.write('{0}\n'.format(card_id))
 
         print('{0} have not vote before'.format(card_id))
+        vote_gui.change_text('沒投過票')  # set gui lable text
     else:
         print('{0} have already vote before'.format(card_id))
+        vote_gui.change_text('投過票')  # set gui lable text
 
 
 # build socket
@@ -63,7 +67,14 @@ def connect_and_read_input():
             connection.connect(config.ADDRESS)
         except Exception as e:
             print('can\'t connect to card reader, please check it')
+            connection.close()
             exit()
+
+        # give the connection to gui (know what to close)
+        vote_gui.connection = connection
+
+        # start gui
+        vote_gui.start()
 
         # Clear all card reader history
         connection.send(bytes(config.CMD_CLEAR_ALL))
@@ -86,8 +97,11 @@ def connect_and_read_input():
 
 # main
 def main():
-    if load_file():
-        connect_and_read_input()
+    try:
+        if load_file():
+            connect_and_read_input()
+    except Exception as e:
+        exit()
 
 
 if __name__ == '__main__':
