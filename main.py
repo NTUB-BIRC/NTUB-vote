@@ -7,6 +7,7 @@ from gui import VoteGUI
 
 # globel
 stu_id_list = []  # list for the student that have already vote
+last_stu_id = None
 vote_gui = VoteGUI()
 
 
@@ -46,6 +47,9 @@ def card_id_process(return_value_hex):
 
         card_id += card_id_part
 
+    if last_stu_id == card_id:
+        return
+
     # if the card id have not vote write into list.txt
     if card_id not in stu_id_list:
         stu_id_list.append(card_id)
@@ -57,6 +61,8 @@ def card_id_process(return_value_hex):
     else:
         print('{0} have already vote before'.format(card_id))
         vote_gui.change_text('投過票')  # set gui lable text
+
+    last_stu_id = card_id
 
 
 # build socket
@@ -101,6 +107,7 @@ def main():
         if load_file():
             connect_and_read_input()
     except Exception as e:
+        vote_gui.close()
         exit()
 
 

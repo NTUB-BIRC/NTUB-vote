@@ -19,7 +19,7 @@ class VoteGUI(threading.Thread):
 
     def change_text(self, text):
         self.lable['text'] = text
-        background_color = False
+        self.lable.background_color = False
 
     def close(self):
         self.connection.close()
