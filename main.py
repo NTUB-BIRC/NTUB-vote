@@ -3,11 +3,14 @@ import socket
 import config  # setting for this project
 from contextlib import closing
 from gui import VoteGUI
+import traceback
+import time
 
 
 # globel
 stu_id_list = []  # list for the student that have already vote
 last_stu_id = None
+counter = 0
 vote_gui = VoteGUI()
 
 
@@ -30,6 +33,9 @@ def load_file():
 # parse the return hex value and print the card id out
 # if the id haven't vote before write it to file
 def card_id_process(return_value_hex):
+    global last_stu_id
+    global counter
+
     # initial
     card_id = ''
 
@@ -50,6 +56,9 @@ def card_id_process(return_value_hex):
     if last_stu_id == card_id:
         return
 
+    counter = 0
+    last_stu_id = card_id
+
     # if the card id have not vote write into list.txt
     if card_id not in stu_id_list:
         stu_id_list.append(card_id)
@@ -57,16 +66,17 @@ def card_id_process(return_value_hex):
             stu_id_list_file.write('{0}\n'.format(card_id))
 
         print('{0} have not vote before'.format(card_id))
-        vote_gui.change_text('沒投過票')  # set gui lable text
+        vote_gui.change_text('歡迎 {} 投票～'.format(card_id))  # set gui lable text
     else:
         print('{0} have already vote before'.format(card_id))
-        vote_gui.change_text('投過票')  # set gui lable text
-
-    last_stu_id = card_id
+        vote_gui.change_text('{} 已經投過票了'.format(card_id))  # set gui lable text
 
 
 # build socket
 def connect_and_read_input():
+    global last_stu_id
+    global counter
+
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as connection:
         # Connect to the card reader
         try:
@@ -85,6 +95,7 @@ def connect_and_read_input():
         # Clear all card reader history
         connection.send(bytes(config.CMD_CLEAR_ALL))
 
+        
         while True:
             # read the list record
             connection.send(bytes(config.CMD_READ_LAST))
@@ -100,6 +111,13 @@ def connect_and_read_input():
                 # clear the id from card reader that get this time
                 connection.send(bytes(config.CMD_CLEAR_LAST))
 
+            counter += 1
+            time.sleep(0.1)
+            if counter >= 50:
+                last_stu_id = None
+                counter = 0
+                vote_gui.change_text('歡迎～')
+
 
 # main
 def main():
@@ -107,7 +125,8 @@ def main():
         if load_file():
             connect_and_read_input()
     except Exception as e:
-        vote_gui.close()
+        error = traceback.format_exc()
+        print(error)
         exit()
 
 
