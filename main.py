@@ -94,7 +94,7 @@ def connect_and_read_input():
             return_value_hex = [hex(byte) for byte in return_value_byte]
 
             # check if that is a card id or not
-            if return_value_hex[1] == '0x1d':
+            if return_value_hex[1] == '0x21':
                 card_id_process(return_value_hex)
 
                 # clear the id from card reader that get this time
