@@ -116,7 +116,6 @@ def connect_and_read_input():
             if counter >= 50:
                 last_stu_id = None
                 counter = 0
-                vote_gui.change_text('歡迎～')
 
 
 # main
